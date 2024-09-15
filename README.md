@@ -2,6 +2,9 @@
 
 A tool for generating and updating directory structure representations in README files.
 
+## Demo
+![Video Demo](dirtree.gif)
+
 ## Installation
 
 ### macOS (Intel and ARM) and Linux
