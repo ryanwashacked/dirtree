@@ -6,12 +6,12 @@ ARCH="$(uname -m)"
 
 if [ "$OS" = "Darwin" ]; then
     if [ "$ARCH" = "arm64" ]; then
-        BINARY_URL="https://github.com/yourusername/dirtree/releases/latest/download/dirtree-macos-arm"
+        BINARY_URL="https://github.com/ryanwashacked/dirtree/releases/latest/download/dirtree-macos-arm"
     else
-        BINARY_URL="https://github.com/yourusername/dirtree/releases/latest/download/dirtree-macos-intel"
+        BINARY_URL="https://github.com/ryanwashacked/dirtree/releases/latest/download/dirtree-macos-intel"
     fi
 elif [ "$OS" = "Linux" ]; then
-    BINARY_URL="https://github.com/yourusername/dirtree/releases/latest/download/dirtree-linux"
+    BINARY_URL="https://github.com/ryanwashacked/dirtree/releases/latest/download/dirtree-linux"
 else
     echo "Unsupported operating system: $OS"
     exit 1

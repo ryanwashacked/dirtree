@@ -12,7 +12,7 @@ use std::io::{Read, Write, Result as IoResult};
 use std::path::{Path, PathBuf};
 use std::collections::HashMap;
 use ignore::gitignore::{GitignoreBuilder, Gitignore};
-use clap::Parser;
+use clap::{Parser, Command};
 
 /// Command line options for the directory structure generator
 #[derive(Parser)]

@@ -39,4 +39,16 @@ Example:
 dirtree -d 2 ~/projects/my-awesome-project
 ```
 
-This will generate a directory tree for `~/projects/my-awesome-project` with a depth of 2 levels and update the README.md file in that directory.
+This will generate a directory tree for `~/projects/my-awesome-project` with a depth of 2 levels and update the README.md file in that directory.## Directory Structure
+
+```
+📁 directory_structure_generator
+   📁 .git
+   📁 .github
+   📁 src
+   📄 .gitignore
+   📄 Cargo.toml
+   📝 README.md
+   📜 install.sh
+
+```
