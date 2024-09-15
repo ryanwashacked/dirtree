@@ -9,6 +9,9 @@ on:
         description: 'Release tag to build for'
         required: true
 
+permissions:
+  contents: write
+
 jobs:
   build:
     name: Build and Release
@@ -44,11 +47,9 @@ jobs:
       - name: Rename binary
         run: mv target/${{ matrix.target }}/release/dirtree ${{ matrix.binary_name }}
       - name: Upload Release Asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
+        uses: softprops/action-gh-release@v1
         with:
-          upload_url: ${{ steps.get_release.outputs.upload_url }}
-          asset_path: ./${{ matrix.binary_name }}
-          asset_name: ${{ matrix.binary_name }}
-          asset_content_type: application/octet-stream
+          files: ${{ matrix.binary_name }}
+          tag_name: ${{ github.event.release.tag_name || github.event.inputs.release_tag }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
