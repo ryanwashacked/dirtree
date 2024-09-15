@@ -9,7 +9,7 @@ A tool for generating and updating directory structure representations in README
 You can install dirtree with the following command:
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/yourusername/dirtree/main/install.sh | bash
+curl -sSL https://raw.githubusercontent.com/ryanwashacked/dirtree/main/install.sh | bash
 ```
 
 This will download the appropriate binary for your system (including ARM-based Macs) and install it in `/usr/local/bin`.
