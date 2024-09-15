@@ -1,9 +1,3 @@
-//! A tool for generating and updating directory structure representations in README files.
-//!
-//! This tool scans a specified directory, respects .gitignore rules, and generates
-//! a tree-like representation of the directory structure. It then updates (or creates)
-//! a README.md file with this structure.
-
 #[cfg(test)]
 mod tests;
 
@@ -12,7 +6,8 @@ use std::io::{Read, Write, Result as IoResult};
 use std::path::{Path, PathBuf};
 use std::collections::HashMap;
 use ignore::gitignore::{GitignoreBuilder, Gitignore};
-use clap::{Parser, Command};
+use clap::Parser;
+use colored::*;
 
 /// Command line options for the directory structure generator
 #[derive(Parser)]
@@ -25,60 +20,50 @@ struct Opts {
     /// Target directory to analyze
     #[arg(value_name = "DIR")]
     target_dir: Option<PathBuf>,
+
+    /// Enable verbose output
+    #[arg(short, long)]
+    verbose: bool,
 }
 
 /// Builds a Gitignore instance for the given root directory
-///
-/// # Arguments
-///
-/// * `root` - The root directory path
-///
-/// # Returns
-///
-/// A Result containing the Gitignore instance or an IO error
-fn build_gitignore(root: &Path) -> IoResult<Gitignore> {
+fn build_gitignore(root: &Path, verbose: bool) -> IoResult<Gitignore> {
     let mut builder = GitignoreBuilder::new(root);
     let gitignore_path = root.join(".gitignore");
-    println!("Debug: Searching for .gitignore at {:?}", gitignore_path);
+    if verbose {
+        println!("{}", format!("Searching for .gitignore at {:?}", gitignore_path).cyan());
+    }
     if gitignore_path.exists() {
-        println!("Debug: .gitignore file found at {:?}", gitignore_path);
+        if verbose {
+            println!("{}", format!(".gitignore file found at {:?}", gitignore_path).green());
+        }
         builder.add(&gitignore_path);
         let mut content = String::new();
         File::open(&gitignore_path)?.read_to_string(&mut content)?;
-        println!("Debug: .gitignore content:\n{}", content);
-    } else {
-        println!("Debug: No .gitignore file found at {:?}", gitignore_path);
+        if verbose {
+            println!("{}", ".gitignore content:".yellow());
+            println!("{}", content);
+        }
+    } else if verbose {
+        println!("{}", format!("No .gitignore file found at {:?}", gitignore_path).yellow());
     }
     let gitignore = builder.build().map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
-    println!("Debug: Gitignore built successfully");
+    if verbose {
+        println!("{}", "Gitignore built successfully".green());
+    }
     Ok(gitignore)
 }
 
 /// Checks if a path should be ignored based on gitignore rules
-///
-/// # Arguments
-///
-/// * `path` - The path to check
-/// * `gitignore` - The Gitignore instance to use for checking
-///
-/// # Returns
-///
-/// A boolean indicating whether the path should be ignored
-fn should_ignore(path: &Path, gitignore: &Gitignore) -> bool {
+fn should_ignore(path: &Path, gitignore: &Gitignore, verbose: bool) -> bool {
     let is_ignored = gitignore.matched_path_or_any_parents(path, path.is_dir()).is_ignore();
-    println!("Debug: Checking path {:?}, is_dir: {}, is_ignored: {}", path, path.is_dir(), is_ignored);
+    if verbose {
+        println!("{}", format!("Checking path {:?}, is_dir: {}, is_ignored: {}", path, path.is_dir(), is_ignored).cyan());
+    }
     is_ignored
 }
+
 /// Determines the icon to use for a file or directory
-///
-/// # Arguments
-///
-/// * `name` - The name of the file or directory
-/// * `is_dir` - Whether the item is a directory
-///
-/// # Returns
-///
-/// A string slice containing the appropriate icon
 fn get_icon(name: &str, is_dir: bool) -> &'static str {
     if is_dir {
         "📁"
@@ -96,17 +81,7 @@ fn get_icon(name: &str, is_dir: bool) -> &'static str {
 }
 
 /// Generates a tree-like representation of the directory structure
-///
-/// # Arguments
-///
-/// * `path` - The root path to start the tree generation from
-/// * `gitignore` - The Gitignore instance to use for filtering
-/// * `max_depth` - The maximum depth to traverse (0 means no limit)
-///
-/// # Returns
-///
-/// A Result containing the generated tree as a String or an IO error
-fn generate_tree(path: &Path, gitignore: &Gitignore, max_depth: usize) -> IoResult<String> {
+fn generate_tree(path: &Path, gitignore: &Gitignore, max_depth: usize, verbose: bool) -> IoResult<String> {
     let mut tree = String::new();
     let mut stack = vec![(path.to_path_buf(), 0)];
     let mut is_last = HashMap::new();
@@ -115,7 +90,7 @@ fn generate_tree(path: &Path, gitignore: &Gitignore, max_depth: usize) -> IoResu
         let is_dir = current_path.is_dir();
         let name = current_path.file_name().unwrap().to_string_lossy();
 
-        if should_ignore(&current_path, gitignore) {
+        if should_ignore(&current_path, gitignore, verbose) {
             continue;
         }
 
@@ -123,7 +98,7 @@ fn generate_tree(path: &Path, gitignore: &Gitignore, max_depth: usize) -> IoResu
             if is_last.get(&d) == Some(&true) {
                 "   "
             } else {
-                "   " // Changed from "│  " to "   "
+                "   "
             }
         }).collect::<String>();
 
@@ -134,7 +109,7 @@ fn generate_tree(path: &Path, gitignore: &Gitignore, max_depth: usize) -> IoResu
         if is_dir && (max_depth == 0 || depth < max_depth) {
             let mut entries: Vec<_> = fs::read_dir(&current_path)?
                 .filter_map(Result::ok)
-                .filter(|e| !should_ignore(&e.path(), gitignore))
+                .filter(|e| !should_ignore(&e.path(), gitignore, verbose))
                 .collect();
 
             entries.sort_by(|a, b| {
@@ -158,15 +133,6 @@ fn generate_tree(path: &Path, gitignore: &Gitignore, max_depth: usize) -> IoResu
 }
 
 /// Updates the README.md file with the generated directory structure
-///
-/// # Arguments
-///
-/// * `tree` - The generated directory structure as a string
-/// * `path` - The path to the directory containing the README.md file
-///
-/// # Returns
-///
-/// A Result indicating success or an IO error
 fn update_readme(tree: &str, path: &Path) -> IoResult<()> {
     let readme_path = path.join("README.md");
     let mut content = String::new();
@@ -203,7 +169,7 @@ fn update_readme(tree: &str, path: &Path) -> IoResult<()> {
 }
 
 fn display_success_message() {
-    println!("
+    println!("{}", "
     ░█▀▄░▀█▀░█▀▄░▀█▀░█▀▄░█▀▀░█▀▀
     ░█░█░░█░░█▀▄░░█░░█▀▄░█▀▀░█▀▀
     ░▀▀░░▀▀▀░▀░▀░░▀░░▀░▀░▀▀▀░▀▀▀
@@ -213,7 +179,7 @@ fn display_success_message() {
     ░▀▀▀░▀▀▀░▀░▀░▀▀▀░▀░▀░▀░▀░░▀░░▀▀▀░▀▀░
 
     Your directory tree has been successfully generated!
-    ");
+    ".green());
 }
 
 fn main() -> IoResult<()> {
@@ -222,16 +188,16 @@ fn main() -> IoResult<()> {
     let target_dir = opts.target_dir.unwrap_or_else(|| std::env::current_dir().unwrap());
 
     if !target_dir.exists() {
-        eprintln!("Error: The specified directory does not exist.");
+        eprintln!("{}", "Error: The specified directory does not exist.".red());
         std::process::exit(1);
     }
 
-    let gitignore = build_gitignore(&target_dir)?;
-    let tree = generate_tree(&target_dir, &gitignore, opts.depth)?;
+    let gitignore = build_gitignore(&target_dir, opts.verbose)?;
+    let tree = generate_tree(&target_dir, &gitignore, opts.depth, opts.verbose)?;
     update_readme(&tree, &target_dir)?;
 
     display_success_message();
 
-    println!("README.md has been updated with the directory structure in {:?}", target_dir);
+    println!("{}", format!("README.md has been updated with the directory structure in {:?}", target_dir).green());
     Ok(())
 }

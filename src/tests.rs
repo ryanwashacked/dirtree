@@ -1,10 +1,10 @@
 use super::*;
+use std::fs::create_dir_all;
+use tempfile::TempDir;
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::fs::create_dir_all;
-    use tempfile::TempDir;
 
     #[test]
     fn test_get_icon() {
@@ -36,35 +36,35 @@ mod tests {
         File::open(&gitignore_path).unwrap().read_to_string(&mut content).unwrap();
         println!("{}", content);
 
-        let gitignore = build_gitignore(root).unwrap();
+        let gitignore = build_gitignore(root, true).unwrap();
 
         // Test files
-        assert!(should_ignore(&root.join("error.log"), &gitignore), "error.log should be ignored");
-        assert!(!should_ignore(&root.join("main.rs"), &gitignore), "main.rs should not be ignored");
+        assert!(should_ignore(&root.join("error.log"), &gitignore, true), "error.log should be ignored");
+        assert!(!should_ignore(&root.join("main.rs"), &gitignore, true), "main.rs should not be ignored");
 
         // Test directories
         let node_modules_path = root.join("node_modules");
         println!("Debug: Checking node_modules at {:?}", node_modules_path);
         create_dir_all(&node_modules_path).unwrap(); // Create the node_modules directory
-        assert!(should_ignore(&node_modules_path, &gitignore), "node_modules should be ignored");
+        assert!(should_ignore(&node_modules_path, &gitignore, true), "node_modules should be ignored");
 
         let build_path = root.join("build");
         create_dir_all(&build_path).unwrap(); // Create the build directory
-        assert!(should_ignore(&build_path, &gitignore), "build should be ignored");
+        assert!(should_ignore(&build_path, &gitignore, true), "build should be ignored");
 
         let src_path = root.join("src");
         create_dir_all(&src_path).unwrap(); // Create the src directory
-        assert!(!should_ignore(&src_path, &gitignore), "src should not be ignored");
+        assert!(!should_ignore(&src_path, &gitignore, true), "src should not be ignored");
 
         // Test nested paths
         File::create(node_modules_path.join("package.json")).unwrap();
-        assert!(should_ignore(&node_modules_path.join("package.json"), &gitignore), "node_modules/package.json should be ignored");
+        assert!(should_ignore(&node_modules_path.join("package.json"), &gitignore, true), "node_modules/package.json should be ignored");
 
         File::create(build_path.join("output.txt")).unwrap();
-        assert!(should_ignore(&build_path.join("output.txt"), &gitignore), "build/output.txt should be ignored");
+        assert!(should_ignore(&build_path.join("output.txt"), &gitignore, true), "build/output.txt should be ignored");
 
         File::create(src_path.join("main.rs")).unwrap();
-        assert!(!should_ignore(&src_path.join("main.rs"), &gitignore), "src/main.rs should not be ignored");
+        assert!(!should_ignore(&src_path.join("main.rs"), &gitignore, true), "src/main.rs should not be ignored");
     }
 
     #[test]
@@ -79,8 +79,8 @@ mod tests {
         File::create(root.join("Cargo.toml")).unwrap();
         File::create(root.join("README.md")).unwrap();
 
-        let gitignore = build_gitignore(root).unwrap();
-        let tree = generate_tree(root, &gitignore, 0).unwrap();
+        let gitignore = build_gitignore(root, true).unwrap();
+        let tree = generate_tree(root, &gitignore, 0, true).unwrap();
 
         let expected_tree = format!(
             "📁 {}\n   📁 src\n      📄 main.rs\n   📁 tests\n   📄 Cargo.toml\n   📝 README.md\n",
