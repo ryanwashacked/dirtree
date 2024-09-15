@@ -1,6 +1,6 @@
 [package]
 name = "dirtree"
-version = "0.1.0"
+version = "1.0.4"
 edition = "2021"
 authors = ["Ryan Dervakos <ryanwashacked@gmail.com>"]
 description = "A tool for generating and updating directory structure representations in README files"

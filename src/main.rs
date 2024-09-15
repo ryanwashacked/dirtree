@@ -6,8 +6,10 @@ use std::io::{Read, Write, Result as IoResult};
 use std::path::{Path, PathBuf};
 use std::collections::HashMap;
 use ignore::gitignore::{GitignoreBuilder, Gitignore};
-use clap::Parser;
+use clap::{Parser};
 use colored::*;
+
+
 
 /// Command line options for the directory structure generator
 #[derive(Parser)]
@@ -184,6 +186,11 @@ fn display_success_message() {
 
 fn main() -> IoResult<()> {
     let opts = Opts::parse();
+
+    if std::env::args().len() == 1 {
+        Opts::parse_from(&["dirtree", "--help"]);
+        return Ok(());
+    }
 
     let target_dir = opts.target_dir.unwrap_or_else(|| std::env::current_dir().unwrap());
 
