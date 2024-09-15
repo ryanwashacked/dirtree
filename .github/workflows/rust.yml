@@ -1,0 +1,45 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    name: Build and Release
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: macos-latest
+            target: x86_64-apple-darwin
+            binary_name: dirtree-macos-intel
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            binary_name: dirtree-macos-arm
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            binary_name: dirtree-linux
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        target: ${{ matrix.target }}
+        override: true
+    - name: Build
+      run: cargo build --release --target ${{ matrix.target }}
+    - name: Rename binary
+      run: mv target/${{ matrix.target }}/release/dirtree ${{ matrix.binary_name }}
+    - name: Upload Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_path: ./${{ matrix.binary_name }}
+        asset_name: ${{ matrix.binary_name }}
+        asset_content_type: application/octet-stream
