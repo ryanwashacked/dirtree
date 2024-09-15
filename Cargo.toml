@@ -1,7 +1,9 @@
 [package]
-name = "directory_structure_generator"
+name = "dirtree"
 version = "0.1.0"
 edition = "2021"
+authors = ["Ryan Dervakos <ryanwashacked@gmail.com>"]
+description = "A tool for generating and updating directory structure representations in README files"
 
 [dependencies]
 walkdir = "2.3.2"
@@ -11,4 +13,8 @@ tempfile = "3.12.0"
 
 [dev-dependencies]
 tempfile = "3.2"
+
+[[bin]]
+name = "dirtree"
+path = "src/main.rs"
 

@@ -1,96 +1,42 @@
-# Directory Structure Generator
+# Dirtree
 
-## Overview
-
-This Rust-based tool generates a visual representation of a directory structure and automatically updates the README.md file of a project with this structure. It respects `.gitignore` rules and provides options to control the depth of subdirectory expansion.
-
-## Features
-
-- Generate a tree-like representation of directory structures
-- Automatically update README.md files with the generated structure
-- Respect `.gitignore` rules to exclude ignored files and directories
-- Customizable depth for subdirectory expansion
-- Use of intuitive icons for different file types
+A tool for generating and updating directory structure representations in README files.
 
 ## Installation
 
-1. Ensure you have Rust installed on your system. If not, install it from [https://www.rust-lang.org/](https://www.rust-lang.org/).
+### macOS (Intel and ARM) and Linux
 
-2. Clone this repository:
-   ```
-   git clone https://github.com/yourusername/directory-structure-generator.git
-   cd directory-structure-generator
-   ```
+You can install dirtree with the following command:
 
-3. Build the project:
-   ```
-   cargo build --release
-   ```
+```bash
+curl -sSL https://raw.githubusercontent.com/yourusername/dirtree/main/install.sh | bash
+```
 
-The executable will be available in `target/release/directory-structure-generator`.
+This will download the appropriate binary for your system (including ARM-based Macs) and install it in `/usr/local/bin`.
+
+### Manual Installation
+
+If you prefer to install manually:
+
+1. Download the appropriate binary for your system from the [latest release](https://github.com/yourusername/dirtree/releases/latest):
+   - macOS Intel: `dirtree-macos-intel`
+   - macOS ARM (M1, M2, etc.): `dirtree-macos-arm`
+   - Linux (x86_64): `dirtree-linux`
+2. Make the binary executable: `chmod +x dirtree-*`
+3. Move the binary to a directory in your PATH and rename it to `dirtree`, e.g., `sudo mv dirtree-* /usr/local/bin/dirtree`
 
 ## Usage
 
-Run the tool using cargo:
-
-```
-cargo run -- [OPTIONS] [DIR]
+```bash
+dirtree [OPTIONS] [DIR]
 ```
 
-Or, if you've built the release version:
+Options:
+- `-d, --depth <DEPTH>`: Number of subdirectory levels to expand (0 means no limit)
 
+Example:
+```bash
+dirtree -d 2 ~/projects/my-awesome-project
 ```
-./target/release/directory-structure-generator [OPTIONS] [DIR]
-```
 
-### Arguments
-
-- `[DIR]`: Optional. The target directory to analyze. If not provided, the current directory is used.
-
-### Options
-
-- `-d, --depth <DEPTH>`: Number of subdirectory levels to expand. Default is 0 (expand all levels).
-- `-h, --help`: Print help information.
-- `-V, --version`: Print version information.
-
-### Examples
-
-1. Generate full directory structure for the current directory:
-   ```
-   cargo run
-   ```
-
-2. Generate structure for a specific directory, expanding only 2 levels:
-   ```
-   cargo run -- --depth 2 /path/to/directory
-   ```
-
-3. Show only the root directory and its immediate subdirectories:
-   ```
-   cargo run -- --depth 1
-   ```
-
-## Output
-
-The tool will update (or create if it doesn't exist) the README.md file in the target directory. It will add or update a "Directory Structure" section with the generated tree-like representation.
-
-## File Icons
-
-The generator uses the following icons for different file types:
-
-- 📁 : Directory
-- 🔧 : YAML files (.yml, .yaml)
-- 📜 : Shell scripts (.sh)
-- 🔑 : PEM files (.pem)
-- 📝 : Markdown files (.md)
-- 📄 : Text files (.txt)
-- 📊 : SQL files (.sql)
-- 📄 : Other file types
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This will generate a directory tree for `~/projects/my-awesome-project` with a depth of 2 levels and update the README.md file in that directory.

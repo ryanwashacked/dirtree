@@ -12,7 +12,6 @@ use std::io::{Read, Write, Result as IoResult};
 use std::path::{Path, PathBuf};
 use std::collections::HashMap;
 use ignore::gitignore::{GitignoreBuilder, Gitignore};
-use ignore::WalkBuilder;
 use clap::Parser;
 
 /// Command line options for the directory structure generator
@@ -203,6 +202,20 @@ fn update_readme(tree: &str, path: &Path) -> IoResult<()> {
     Ok(())
 }
 
+fn display_success_message() {
+    println!("
+    ░█▀▄░▀█▀░█▀▄░▀█▀░█▀▄░█▀▀░█▀▀
+    ░█░█░░█░░█▀▄░░█░░█▀▄░█▀▀░█▀▀
+    ░▀▀░░▀▀▀░▀░▀░░▀░░▀░▀░▀▀▀░▀▀▀
+
+    ░█▀▀░█▀▀░█▀█░█▀▀░█▀▄░█▀█░▀█▀░█▀▀░█▀▄
+    ░█░█░█▀▀░█░█░█▀▀░█▀▄░█▀█░░█░░█▀▀░█░█
+    ░▀▀▀░▀▀▀░▀░▀░▀▀▀░▀░▀░▀░▀░░▀░░▀▀▀░▀▀░
+
+    Your directory tree has been successfully generated!
+    ");
+}
+
 fn main() -> IoResult<()> {
     let opts = Opts::parse();
 
@@ -216,6 +229,9 @@ fn main() -> IoResult<()> {
     let gitignore = build_gitignore(&target_dir)?;
     let tree = generate_tree(&target_dir, &gitignore, opts.depth)?;
     update_readme(&tree, &target_dir)?;
+
+    display_success_message();
+
     println!("README.md has been updated with the directory structure in {:?}", target_dir);
     Ok(())
 }
